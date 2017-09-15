@@ -26,7 +26,7 @@ vorpal
 
       if (props.options.verbose) {
         this.log(pretty(data))      
-        this.log(chalk.bold[bg](`took ${req.time}ms`))
+        this.log(chalk.bold[bg](`took ${request.time}ms`))
       } else {
         this.log(pretty(data))
       }
