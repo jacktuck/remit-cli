@@ -25,6 +25,7 @@
   "homepage": "https://github.com/jpwilliams/remit-cli#readme",
   "dependencies": {
     "expand-object": "^0.4.2",
+    "p-time": "^1.0.0",
     "prettyjson": "^1.2.1",
     "remit": "^2.0.0",
     "vorpal": "^1.12.0"

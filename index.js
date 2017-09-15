@@ -1,27 +1,64 @@
-const delayedPromise = data => new Promise(resolve => resolve(data))
+const remit = require('remit')()
+const pTime = require('p-time')
 
-// Faking remit for now
-const remit = {
-  request: endpoint => data => delayedPromise(data) 
-}
+const pretty = require('./pretty')
+const marshal = require('./marshal')
 
 const vorpal = require('vorpal')()
 const chalk = vorpal.chalk
-var prettyjson = require('prettyjson')
 
 vorpal
-  .command('request')
-  .action(async function (args, cb) {
-    remit.request('foo')({foo: {bar: 2}})
-      .then((data) => {
-        this.log(prettyjson.render(data, {
-          keysColor: 'rainbow',
-          dashColor: 'magenta',
-          stringColor: 'white'
-        }))
+  .command('request <endpoint> [args...]')
+  .option('-v, --verbose')
+  .action(async function (props, cb) {
+    const args = props.args ? marshal(props.args) : {}
+    
+    const makeRequest = remit
+      .request(props.endpoint)
+      .options({ timeout: 1000 })
+
+    await makeRequest.ready()
+
+    const request = pTime(makeRequest)(args)
+
+    request.then((data) => {
+      const bg = request.time < 200 ? 'green' : request.time > 500 ? 'red' : 'yellow'
+
+      if (props.options.verbose) {
+        this.log(pretty(data))      
+        this.log(chalk.bold[bg](`took ${req.time}ms`))
+      } else {
+        this.log(pretty(data))
+      }
+
+      cb()
+    })
+  })
+
+vorpal
+  .command('emit <endpoint> [args...]')
+  .action(async function (props, cb) {
+    const args = props.args ? marshal(props.args) : {}
+    
+    remit
+      .emit(props.endpoint)()
+      .then(cb)
+  })
+
+  vorpal
+  .command('listen <endpoint>')
+  .action(async function (props, cb) {
+    console.log('got listen')
+    remit
+      .listen(props.endpoint)
+      .handler((data) => {
+        console.log('got msg')
+        this.log(pretty(data)) 
         cb()
       })
-  })
+      .start()
+   })
+
 
 vorpal
   .delimiter(chalk.magenta('remit~$'))
